@@ -1,6 +1,7 @@
 package com.example.a7.englishwords;
 
-import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,12 +17,16 @@ public class MainActivity extends AppCompatActivity {
     Words words;
     int inARowCounter;
     boolean firstCheck, guessed;
-
+    MediaPlayer mediaPlayer;
+    int tracks[];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
 
         russianWord = (TextView) findViewById(R.id.russianWord);
         correctWord1 = (TextView) findViewById(R.id.correctWord1);
@@ -69,6 +74,27 @@ public class MainActivity extends AppCompatActivity {
         input3.setOnClickListener(onClickListener);
     }
 
+    private void pronounWords() {
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), tracks[0]);
+
+        mediaPlayer.start();
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mediaPlayer = MediaPlayer.create(getApplicationContext(), tracks[1]);
+                mediaPlayer.start();
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mediaPlayer = MediaPlayer.create(getApplicationContext(), tracks[2]);
+                        mediaPlayer.start();
+                    }
+                });
+            }
+        });
+
+    }
+
     private void getNewWord() {
         if (!guessed) inARowCounter = 0;
         guessed = false;
@@ -76,7 +102,27 @@ public class MainActivity extends AppCompatActivity {
         firstCheck = true;
         setInARow();
         words = new Words();
+        setSounds(words);
         russianWord.setText(words.getRussianWord());
+    }
+
+    private void setSounds(Words words) {
+
+        int infinitiveId = getResources().getIdentifier(setInfinitiveWord(words), "raw", getPackageName());
+        int pastSimpleId = getResources().getIdentifier(words.getEnglishWords().getPastSimple(), "raw", getPackageName());
+        int pastParticularId = getResources().getIdentifier(words.getEnglishWords().getPastParticular(), "raw", getPackageName());
+
+        tracks = new int[]{infinitiveId, pastSimpleId, pastParticularId};
+    }
+
+    private String setInfinitiveWord(Words words) {
+        String infinitive = words.getEnglishWords().getInfinitive();
+        words.getEnglishWords().getInfinitive();
+
+        if (infinitive.equals("do") || infinitive.equals("break") || infinitive.equals("throw")) {
+            infinitive += 1;
+        }
+        return infinitive;
     }
 
     private void hideOldAnswers() {
@@ -122,6 +168,14 @@ public class MainActivity extends AppCompatActivity {
            inARowCounter++;
            firstCheck = false;
            guessed = true;
+           pronounWords();
+
+       } else if (input1.getText().toString().toLowerCase().equals(words.getEnglishWords().getInfinitive()) &&
+               input2.getText().toString().toLowerCase().equals(words.getEnglishWords().getPastSimple()) &&
+               input3.getText().toString().toLowerCase().equals(words.getEnglishWords().getPastParticular()))
+       {
+           guessed = true;
+           pronounWords();
        } else {
            guessed = false;
            firstCheck = false;

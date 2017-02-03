@@ -56,6 +56,7 @@ public class Words {
         int randomNumber = (int) (Math.random() * russianWords.length);
 
         this.russianWord = russianWords[randomNumber];
+        this.russianWord = "Класть(прокладывать, лежать, возложить)";
 
         String infinityWord = infinitiveWords[randomNumber];
         String pastSimpleWord = pastSimpleWords[randomNumber];
